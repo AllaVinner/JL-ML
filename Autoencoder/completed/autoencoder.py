@@ -1,7 +1,6 @@
-import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers, losses
+from tensorflow.keras import layers
 from tensorflow.keras.models import Model
 
 class Autoencoder(Model):
@@ -23,9 +22,8 @@ class Autoencoder(Model):
             input_len = tf.reduce_prod(input_shape).numpy() # Disregards batch length
             
             # Encoder
-            encoder_input = keras.Input(shape=input_shape) # Adds a batch dimension
+            encoder_input = keras.Input(shape=input_shape, name='input 1') # Adds a batch dimension
             x = layers.Flatten()(encoder_input)
-            print(x.shape)
             encoder_output = layers.Dense(latent_dim, activation='relu', name='enc_dense1')(x)
             encoder = keras.Model(encoder_input, encoder_output, name='encoder')
             
