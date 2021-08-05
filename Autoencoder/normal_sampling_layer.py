@@ -43,7 +43,7 @@ class NormalSamplingLayer(tf.keras.layers.Layer):
         epsilon = tf.keras.backend.random_normal(shape=(batch, dim))
         z_samp = z_mean + tf.exp(0.5 * z_log_var) * epsilon
         return z_samp
-    
+        
     def get_config(self):
         config = super(NormalSamplingLayer,self).get_config()
         return config
