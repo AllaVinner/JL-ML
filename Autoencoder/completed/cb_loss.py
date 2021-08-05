@@ -92,6 +92,12 @@ def cb_autoencoder_loss(y_true, y_pred, precision=1e-4):
     This is similar to the regular (binarized) bernoulli ELBO,
     but with an added regularization term.
     
+    -- Example usage: --
+    
+    model = Autoencoder(latent_dim)
+    model.compile(optimizer='Adam', loss = cb_autoencoder_loss)
+    model.fit(...)
+    
     """ 
     
     if y_true is None:
@@ -103,13 +109,6 @@ def cb_autoencoder_loss(y_true, y_pred, precision=1e-4):
     
     # Clip outputs to avoid numerical instability
     y_pred_flat = tf.clip_by_value(y_pred_flat, precision, 1-precision)
-    
-    # calculate normalizing constant
-    # log_norm_const = _cont_bern_log_norm(y_pred_flat)
-    
-    # reconstruction loss
-    # log_p_all = y_true_flat * tf.math.log(y_pred_flat) + (1 - y_true_flat) * tf.math.log(1 - y_pred_flat) + log_norm_const
-    # log_px_z = tf.reduce_mean(tf.reduce_sum(log_p_all, axis=1))
     
     return -_reconstruction_loss(y_true_flat, y_pred_flat)
 
@@ -177,11 +176,7 @@ def _flatten_and_convert(y_true, y_pred):
     y_pred_len = tf.shape(y_pred)[0]
     y_true_len = tf.shape(y_true)[0]
     
-    print(y_pred.shape)
-    
     y_pred_flat = tf.reshape(y_pred, [y_pred_len, -1, 1])
     y_true_flat = tf.reshape(y_true, [y_true_len, -1, 1])
-    
-    print(y_pred_flat.shape)
     
     return y_true_flat, y_pred_flat
