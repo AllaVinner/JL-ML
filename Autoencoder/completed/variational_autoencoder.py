@@ -15,7 +15,7 @@ class VariationalAutoencoder(keras.Model):
         This class 
     
     """
-    def __init__(self, encoder, decoder, sampler = None, latent_loss = None,  **kwargs):
+    def __init__(self, encoder, decoder, latent_loss = None,  **kwargs):
         """
         The encoder, decoder, and sampler need to be compatible with eachother.
         
@@ -31,10 +31,14 @@ class VariationalAutoencoder(keras.Model):
         """
         super(VariationalAutoencoder, self).__init__(**kwargs)
         # Initiate model structure 
-        self.encoder, self.decoder, self.sampler = encoder, decoder, sampler
-        self.latent_loss = latent_loss
-        if self.sampler is None: self.sampler = NormalSamplingLayer()
-        if self.latent_loss is None: self.latent_loss =  keras.losses.BinaryCrossentropy
+        self.encoder, self.decoder = encoder, decoder
+        self.sampler = NormalSamplingLayer()
+        
+        if self.latent_loss is None:
+            self.latent_loss =  keras.losses.BinaryCrossentropy
+        else:
+            self.latent_loss = latent_loss
+            
         #if encoder is built, check that it is compatible with the given
         #decoder
         if self.encoder.built:
@@ -45,16 +49,14 @@ class VariationalAutoencoder(keras.Model):
     @tf.function
     def call(self, inputs, training = False, **kwargs):
         encoded_distribution = self.encoder(inputs)
-        sample = self.sampler(encoded_distribution, training = training)
-        outputs = self.decoder(sample)
+        latent_sample = self.sampler(encoded_distribution, training = training)
+        outputs = self.decoder(latent_sample)
         
         #self.add_loss(self.latent_loss(encoded_distribution, encoded_distribution))
-        self.add_loss(lambda : keras.losses.mse(inputs, outputs))
+        self.add_loss(lambda inputs, outputs: keras.losses.mse(inputs, outputs))
         return outputs
    
 
-   
-    
     @property
     def latent_dim(self):
         return self.decoder.input_shape[-1]
@@ -82,8 +84,30 @@ class VariationalAutoencoder(keras.Model):
         #self._check_encoder_decoder_compatibility(input_shape)
         super(VariationalAutoencoder, self).build(input_shape)
         
+    
+    @tf.function
+    def train_step(self, inputs, **kwargs):
+        with tf.GradientTape() as tape:
+            encoded_distribution = self.encoder(inputs)
+            latent_sample = self.sampler(encoded_distribution)
+            outputs = self.decoder(latent_sample)
+            loss = self.compute_loss(inputs, outputs, encoded_distribution, latent_sample)
+    
+    def compute_loss(self, inputs, outputs, encoded_distribution, latent_sample):
+        reconstruction_loss = self.loss(inputs, outputs)
+        
+        latent_loss = self.latent_loss(encoded_distribution, latent_sample)
+        
+        return latent_loss + reconstruction_loss
  
-  
+    def _latent_loss(encoded_distribution, latent_sample):
+        # TODO
+        pass
+    
+    def _reconstruciton_loss(inputs, outputs):
+        # TODO
+        pass
+ 
     def _check_encoder_decoder_compatibility(self, input_shape):
         """
             Checks if the encoder and decoder are compatible with the given
@@ -126,29 +150,6 @@ class VariationalAutoencoder(keras.Model):
         #the decoder.
         self.encoder.input.shape.assert_is_compatible_with(self.decoder.output.shape)
          
-        """
-        # TODO:
-        # Decision: Is is better to output messages or is it better to use the tensor 
-        #functions?
-        
-        if self.decoder.built:
-        assert(self.encoder.output_shape == self.decoder.input.shape),\
-        "The output shape of encoder do not match input shape of decoder\n\
-        Encoder output shape: {encoder_shape}\n\
-        Decoder input shape: {decoder_shape}".format(
-         encoder_shape = self.encoder.output_shape,
-         decoder_shape = self.decoder.input_shape) 
-        else:     
-        outputs = self.decoder(encoded)
-       
-        assert(self.encoder.input_shape == self.decoder.output_shape),\
-        "The input shape of encoder do not match output shape of decoder\n\
-        Encoder input shape: {encoder_shape}\n\
-        Decoder output shape: {decoder_shape}".format(
-        encoder_shape = self.encoder.input_shape,
-        decoder_shape = self.decoder.output_shape) 
-        """
-
 
 class NormalSamplingLayer(tf.keras.layers.Layer):
     """
