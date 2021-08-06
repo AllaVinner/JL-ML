@@ -6,16 +6,16 @@ Created on Mon Jul 26 20:50:39 2021
 """
 import tensorflow as tf
 from tensorflow import keras
-import autoencoder_models as ae_models
+import variational_autoencoder_models as vae_models
 import keras
 import numpy as np
 
-class Autoencoder(keras.Model):
+class VariationalAutoencoder(keras.Model):
     """
         This class 
     
     """
-    def __init__(self, encoder, decoder, **kwargs):
+    def __init__(self, encoder, decoder, sampler = None, latent_loss = None,  **kwargs):
         """
         The encoder, decoder, and sampler need to be compatible with eachother.
         
@@ -29,28 +29,40 @@ class Autoencoder(keras.Model):
             Decodes a 
         
         """
-        super(Autoencoder, self).__init__(**kwargs)
+        super(VariationalAutoencoder, self).__init__(**kwargs)
         # Initiate model structure 
-        self.encoder, self.decoder = encoder, decoder
-        
+        self.encoder, self.decoder, self.sampler = encoder, decoder, sampler
+        self.latent_loss = latent_loss
+        if self.sampler is None: self.sampler = NormalSamplingLayer()
+        if self.latent_loss is None: self.latent_loss =  keras.losses.BinaryCrossentropy
         #if encoder is built, check that it is compatible with the given
         #decoder
         if self.encoder.built:
-            self._check_encoder_decoder_compatibility(self.encoder.input.shape)
+            pass
+            #self._check_encoder_decoder_compatibility(self.encoder.input.shape)
         
         
+    @tf.function
+    def call(self, inputs, training = False, **kwargs):
+        encoded_distribution = self.encoder(inputs)
+        sample = self.sampler(encoded_distribution, training = training)
+        outputs = self.decoder(sample)
         
-    def call(self, inputs, **kwargs):
-        encoded = self.encoder(inputs)
-        outputs = self.decoder(encoded)
+        #self.add_loss(self.latent_loss(encoded_distribution, encoded_distribution))
+        self.add_loss(lambda : keras.losses.mse(inputs, outputs))
         return outputs
+   
+
+   
     
     @property
     def latent_dim(self):
         return self.decoder.input_shape[-1]
     
     def encode(self, inputs, **kwargs):
-        return self.encoder(inputs)
+        latent = self.encoder(inputs, training = False)
+        z_mean = self.sampler(latent, training = False)
+        return z_mean
     
     def get_config(self):
         config = {"encoder": self.encoder,
@@ -67,8 +79,8 @@ class Autoencoder(keras.Model):
             Check if the given encoder and decoder are compatible
             before building.
         """
-        self._check_encoder_decoder_compatibility(input_shape)
-        super(Autoencoder, self).build(input_shape)
+        #self._check_encoder_decoder_compatibility(input_shape)
+        super(VariationalAutoencoder, self).build(input_shape)
         
  
   
@@ -138,14 +150,87 @@ class Autoencoder(keras.Model):
         """
 
 
+class NormalSamplingLayer(tf.keras.layers.Layer):
+    """
+        This class inherits frow keras klass Layer. It takes in a vector of
+        means and a vector of log-variances. The input should be anle to be
+        unpacked. Then for each input, we will sample from a normal
+        distribution with the given mean and varaices. This sample is what is 
+        fed forward.
+    """
+    
+    def __init__(self, **kwargs):
+        super(NormalSamplingLayer, self).__init__(**kwargs)
+        
+    def build(self, input_shape):
+        pass
+        
+
+    def call(self, inputs, training = False, **kwargs):
+        """
+            Defines the arcitechture with the input and sends the signal
+            forward.
+            
+            The input consists of the mean and log-variances, and we then 
+            sample a new sample from the corresponding normal distribution
+            which is then passed forward.
+            
+            Parameters
+            ----------
+            inputs : tuple/list (None,2,None)
+                Containimg the array of means and log variances.
+        """
+        z_mean, z_log_var = tf.unstack(inputs, axis = 1)
+        if not training: return z_mean
+        batch = tf.shape(z_mean)[0]
+        dim = tf.shape(z_mean)[1]
+        epsilon = tf.keras.backend.random_normal(shape=(batch, dim))
+        z_samp = z_mean + tf.exp(0.5 * z_log_var) * epsilon
+        return z_samp
+
+    def get_config(self):
+        config = super(NormalSamplingLayer,self).get_config()
+        return config      
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
+
+
+def kl_normal_loss(y_true, y_pred, **kwargs):
+    z_mean, z_log_var = tf.unstack(y_pred, axis = 1)
+    kl_loss = -0.5 * (1 + z_log_var - tf.exp(z_log_var) - tf.square(z_mean))
+    #kl_loss = tf.reduce_mean(tf.reduce_sum(kl_loss, axis=1))
+    return kl_loss
 
 if __name__ == '__main__':
+    """
     input_shape = (28,28,1)
     latent_dim = 23
     inputs = keras.Input( input_shape)
-    model =  ae_models.get_model_cnn_shallow(input_shape, latent_dim)
-    #model(inputs)
+    model =  vae_models.get_mnist_cnn_shallow(input_shape, latent_dim)
+    model(inputs)
+    """
+    # Process data
+    (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+    num_samples = 100
+    mnist_digits = np.concatenate([x_train, x_test], axis=0)
+    mnist_digits = np.expand_dims(mnist_digits, -1).astype("float32") / 255
+    mnist_labels = np.concatenate([y_train, y_test], axis=0)
+    input_shape = mnist_digits.shape[1:]
+    mnist_digits = mnist_digits[0:num_samples]
+    mnist_labels = mnist_labels[0:num_samples]
     
+    input_shape = (28,28,1)
+    latent_dim = 23
+    inputs = keras.Input( input_shape)
+    model =  vae_models.get_mnist_cnn_shallow(input_shape, latent_dim)
+    
+    model.compile(optimizer = "adam",loss = 'mse')
+
+    model.fit(mnist_digits,mnist_digits,
+          epochs = 1,
+          batch_size = 50)
     
     
     
