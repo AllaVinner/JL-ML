@@ -2,6 +2,7 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.models import Model
+from cb_loss import cb_autoencoder_loss # Custom continuous Bernoulli loss f
 
 class Autoencoder(Model):
     def __init__(self, input_shape, latent_dim=2, 
@@ -13,7 +14,12 @@ class Autoencoder(Model):
             self.encoder, self.decoder = encoder, decoder
         else:
             self.encoder, self.decoder = self._create_model(input_shape, latent_dim, model_type)
+    
+    def compile(self, optimizer, loss):
+        # If continuous bernoulli loss is selected, use custom loss
         
+            super().compile(optimizer=optimizer, loss=loss)
+    
     def _create_model(self, input_shape, latent_dim, model_type):
         
         # Basic dense model
@@ -69,3 +75,10 @@ class Autoencoder(Model):
         encoded = self.encoder(x)
         decoded = self.decoder(encoded)
         return decoded
+    
+    def encode(self, x):
+        return self.encoder(x)
+    
+    def decode(self, z):
+        return self.decoder(z)
+    
