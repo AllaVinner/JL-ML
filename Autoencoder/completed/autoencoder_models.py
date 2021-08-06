@@ -23,7 +23,7 @@ from autoencoder import Autoencoder
 
 
 def get_mnist_cnn_deep(input_shape, latent_dim):
-    # OUTPUT_SHAPE = (28,28,1)
+    # OUTPUT_SHAPE = (28,28,1) or (28,28)
     # Variational autoencoder
     encoder = keras.Sequential([
         keras.layers.InputLayer(input_shape=input_shape),
@@ -69,7 +69,7 @@ def get_mnist_cnn_deep(input_shape, latent_dim):
 
 
 def get_mnist_cnn_shallow(input_shape, latent_dim):
-    # OUTPUT_SHAPE = (28,28,1)
+    # OUTPUT_SHAPE = (28,28,1) or (28,28)
     # Variational autoencoder
     encoder = tf.keras.Sequential(
         [
@@ -110,7 +110,7 @@ def get_mnist_cnn_shallow(input_shape, latent_dim):
     return model
 
 
-def get_mnist_dense_shallow(input_shape, latent_dim, intermediat_dim = 200):
+def get_dense_shallow(input_shape, latent_dim, intermediat_dim = 200):
     encoder = keras.Sequential([
         keras.Input(input_shape),
         keras.layers.Flatten(),
@@ -131,7 +131,7 @@ def get_mnist_dense_shallow(input_shape, latent_dim, intermediat_dim = 200):
     return model
 
 
-def get_mnist_dense_deep(input_shape, latent_dim, intermediat_dim = (200,100,50)):
+def get_dense_deep(input_shape, latent_dim, intermediat_dim = (200,100,50)):
     encoder = keras.Sequential([
         keras.Input(input_shape),
         keras.layers.Flatten(),

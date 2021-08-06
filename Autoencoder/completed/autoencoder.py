@@ -36,7 +36,7 @@ class Autoencoder(keras.Model):
         #if encoder is built, check that it is compatible with the given
         #decoder
         if self.encoder.built:
-            self._check_encoder_decoder_compatibility(self.encoder.input.shape)
+            self._assert_encoder_decoder_compatibility(self.encoder.input.shape)
         
         
         
@@ -67,15 +67,15 @@ class Autoencoder(keras.Model):
             Check if the given encoder and decoder are compatible
             before building.
         """
-        self._check_encoder_decoder_compatibility(input_shape)
+        self._assert_encoder_decoder_compatibility(input_shape)
         super(Autoencoder, self).build(input_shape)
         
  
   
-    def _check_encoder_decoder_compatibility(self, input_shape):
+    def _assert_encoder_decoder_compatibility(self, input_shape):
         """
             Checks if the encoder and decoder are compatible with the given
-            shape of the input. It raises ValueErrors in three occations.
+            shape of the input. Raises ValueErrors in three situations.
             1. The encoder is built, and its input shape does not match the 
             given input shape.
             2. The decoder is built, and its input_shape does not match the
