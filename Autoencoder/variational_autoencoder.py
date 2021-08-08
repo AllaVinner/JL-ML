@@ -113,9 +113,7 @@ class VariationalAutoencoder(keras.Model):
             z_mean, z_log_var = tf.unstack(latent, axis = 1)
             # Calculate losses
             reconstruction_loss = tf.reduce_mean(
-                tf.reduce_sum(
-                    keras.losses.binary_crossentropy(inputs, reconstruction), axis=(1, 2)
-                )
+                    keras.losses.binary_crossentropy(inputs, reconstruction)
             )
             
             kl_loss = -0.5 * (1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))
@@ -267,11 +265,11 @@ if __name__ == '__main__':
     #va.train_step(mnist_digits[0:10])
     
     va.fit(mnist_digits,
-          epochs = 1,
+          epochs = 15,
           batch_size = 256)
     
     
-    
+    va.save("model_binary_crossentropy_beta_1")
     
     
 

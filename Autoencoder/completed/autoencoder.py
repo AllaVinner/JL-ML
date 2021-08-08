@@ -95,47 +95,22 @@ class Autoencoder(keras.Model):
         """
         #1. if encoder is built, checks if its input shape is compatible with
         #the passed input shape.
-        #else the encoder is built.
         if self.encoder.built:
             input_shape.assert_is_compatible_with(self.encoder.input.shape)
-        else:
-            inputs = keras.Input(batch_input_shape = input_shape) 
-            encoded = self.encoder(inputs)
+            
+        inputs = keras.Input(batch_input_shape = input_shape) 
+        encoded = self.encoder(inputs)
         
         #2. if decoder is built, checks if its input shape is compatible with
         #the output of the encoder.
-        #else the decoder is built.
         if self.decoder.built:
             self.encoder.output.shape.assert_is_compatible_with(self.decoder.input.shape)
-        else:
-            outputs = self.decoder(encoded)
+        outputs = self.decoder(encoded)
         
         #3. checks if the input of the encoder is compatible with the output of
         #the decoder.
         self.encoder.input.shape.assert_is_compatible_with(self.decoder.output.shape)
          
-        """
-        # TODO:
-        # Decision: Is is better to output messages or is it better to use the tensor 
-        #functions?
-        
-        if self.decoder.built:
-        assert(self.encoder.output_shape == self.decoder.input.shape),\
-        "The output shape of encoder do not match input shape of decoder\n\
-        Encoder output shape: {encoder_shape}\n\
-        Decoder input shape: {decoder_shape}".format(
-         encoder_shape = self.encoder.output_shape,
-         decoder_shape = self.decoder.input_shape) 
-        else:     
-        outputs = self.decoder(encoded)
-       
-        assert(self.encoder.input_shape == self.decoder.output_shape),\
-        "The input shape of encoder do not match output shape of decoder\n\
-        Encoder input shape: {encoder_shape}\n\
-        Decoder output shape: {decoder_shape}".format(
-        encoder_shape = self.encoder.input_shape,
-        decoder_shape = self.decoder.output_shape) 
-        """
 
 
 
@@ -143,7 +118,7 @@ if __name__ == '__main__':
     input_shape = (28,28,1)
     latent_dim = 23
     inputs = keras.Input( input_shape)
-    model =  ae_models.get_model_cnn_shallow(input_shape, latent_dim)
+    model =  ae_models.get_mnsit_cnn_shallow(input_shape, latent_dim)
     #model(inputs)
     
     
