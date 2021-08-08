@@ -15,7 +15,11 @@ class VariationalAutoencoder(keras.Model):
         This class 
     
     """
+<<<<<<< HEAD
     def __init__(self, encoder, decoder, sampler = None, **kwargs):
+=======
+    def __init__(self, encoder, decoder, latent_loss = None,  **kwargs):
+>>>>>>> 35def5fba67cf8f947e55a46333f213ef0f1c79d
         """
         The encoder, decoder, and sampler need to be compatible with eachother.
         
@@ -32,6 +36,7 @@ class VariationalAutoencoder(keras.Model):
         super(VariationalAutoencoder, self).__init__(**kwargs)
         
         # Initiate model structure 
+<<<<<<< HEAD
         self.encoder, self.decoder, self.sampler = encoder, decoder, sampler
         if self.sampler is None: self.sampler = NormalSamplingLayer()
 
@@ -44,6 +49,16 @@ class VariationalAutoencoder(keras.Model):
         )
         self.loss_tracker_latent = keras.metrics.Mean(name="latent_loss")
         
+=======
+        self.encoder, self.decoder = encoder, decoder
+        self.sampler = NormalSamplingLayer()
+        
+        if self.latent_loss is None:
+            self.latent_loss =  keras.losses.BinaryCrossentropy
+        else:
+            self.latent_loss = latent_loss
+            
+>>>>>>> 35def5fba67cf8f947e55a46333f213ef0f1c79d
         #if encoder is built, check that it is compatible with the given
         #decoder
         if self.encoder.built:
@@ -51,11 +66,21 @@ class VariationalAutoencoder(keras.Model):
         
         
     def call(self, inputs, training = False, **kwargs):
+<<<<<<< HEAD
         latent_distribution = self.encoder(inputs)
         latent_sample       = self.sampler(latent_distribution, training = training)
         outputs             = self.decoder(latent_sample)
+=======
+        encoded_distribution = self.encoder(inputs)
+        latent_sample = self.sampler(encoded_distribution, training = training)
+        outputs = self.decoder(latent_sample)
+        
+        #self.add_loss(self.latent_loss(encoded_distribution, encoded_distribution))
+        self.add_loss(lambda inputs, outputs: keras.losses.mse(inputs, outputs))
+>>>>>>> 35def5fba67cf8f947e55a46333f213ef0f1c79d
         return outputs
 
+<<<<<<< HEAD
     def compile(self, reconstruction_loss = None, latent_loss = None, **kwargs):
         super(VariationalAutoencoder, self).compile(**kwargs)
         
@@ -70,6 +95,8 @@ class VariationalAutoencoder(keras.Model):
             self.latentloss = latent_loss
       
         
+=======
+>>>>>>> 35def5fba67cf8f947e55a46333f213ef0f1c79d
     @property
     def latent_dim(self):
         return self.decoder.input_shape[-1]
@@ -97,6 +124,7 @@ class VariationalAutoencoder(keras.Model):
         self._check_encoder_decoder_compatibility(input_shape)
         super(VariationalAutoencoder, self).build(input_shape)
         
+<<<<<<< HEAD
     def train_step(self, inputs, **kwargs):
         """
         Performs a single step of training on the data given. 
@@ -136,6 +164,32 @@ class VariationalAutoencoder(keras.Model):
             "Latent loss": self.loss_tracker_latent.result(),
                }
   
+=======
+    
+    @tf.function
+    def train_step(self, inputs, **kwargs):
+        with tf.GradientTape() as tape:
+            encoded_distribution = self.encoder(inputs)
+            latent_sample = self.sampler(encoded_distribution)
+            outputs = self.decoder(latent_sample)
+            loss = self.compute_loss(inputs, outputs, encoded_distribution, latent_sample)
+    
+    def compute_loss(self, inputs, outputs, encoded_distribution, latent_sample):
+        reconstruction_loss = self.loss(inputs, outputs)
+        
+        latent_loss = self.latent_loss(encoded_distribution, latent_sample)
+        
+        return latent_loss + reconstruction_loss
+ 
+    def _latent_loss(encoded_distribution, latent_sample):
+        # TODO
+        pass
+    
+    def _reconstruciton_loss(inputs, outputs):
+        # TODO
+        pass
+ 
+>>>>>>> 35def5fba67cf8f947e55a46333f213ef0f1c79d
     def _check_encoder_decoder_compatibility(self, input_shape):
         """
             Checks if the encoder and decoder are compatible with the given
