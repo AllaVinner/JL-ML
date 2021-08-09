@@ -35,9 +35,9 @@ latent_dim = 10
 ##############################################################################
 model = vae_models.get_mnist_cnn_deep(input_shape, latent_dim)
 model.compile(optimizer = "adam",
-                   reconstruction_loss = keras.losses.binary_crossentropy,
-                   reconstruction_factor = 10,
-                   latent_factor = 1)
+              reconstruction_loss = keras.losses.binary_crossentropy,
+              reconstruction_factor = 10,
+              latent_factor = 1)
 
 model.fit(mnist_digits,
       epochs = 20,
@@ -72,7 +72,7 @@ model(keras.Input(input_shape))
 model.save("model_bc_rf_1000_lf_1")
 
 
-
+##############################################################################
 
 
 

@@ -45,7 +45,7 @@ class VariationalAutoencoder(keras.Model):
         #if encoder is built, check that it is compatible with the given
         #decoder
         if self.encoder.built:
-            self._check_encoder_decoder_compatibility(self.encoder.input.shape)
+            self._assert_encoder_decoder_compatibility(self.encoder.input.shape)
         
         
     def call(self, inputs, training = False, **kwargs):
@@ -55,7 +55,7 @@ class VariationalAutoencoder(keras.Model):
         return outputs
 
     def compile(self, reconstruction_loss = None, latent_loss = None,
-                reconstruction_factor = 1e2, latent_factor = 1., **kwargs):
+                reconstruction_factor = 1e3, latent_factor = 1., **kwargs):
         super(VariationalAutoencoder, self).compile(**kwargs)
         
         if reconstruction_loss is None:
@@ -100,7 +100,7 @@ class VariationalAutoencoder(keras.Model):
             Check if the given encoder and decoder are compatible
             before building.
         """
-        self._check_encoder_decoder_compatibility(input_shape)
+        self._assert_encoder_decoder_compatibility(input_shape)
         super(VariationalAutoencoder, self).build(input_shape)
         
     def train_step(self, inputs, **kwargs):
@@ -142,7 +142,7 @@ class VariationalAutoencoder(keras.Model):
             "Latent loss": self.loss_tracker_latent.result(),
                }
   
-    def _check_encoder_decoder_compatibility(self, input_shape):
+    def _assert_encoder_decoder_compatibility(self, input_shape):
         """
             Checks if the encoder and decoder are compatible with the given
             shape of the input. It raises ValueErrors in three occations.
