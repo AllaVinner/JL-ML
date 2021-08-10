@@ -68,6 +68,7 @@ def get_mnist_cnn_shallow(input_shape, latent_dim):
             tf.keras.layers.InputLayer(input_shape=(28, 28, 1)),
             tf.keras.layers.Conv2D(
                 filters=32, kernel_size=3, strides=(2, 2), activation='relu'),
+            tf.keras.layers.Dropout(0.3),
             tf.keras.layers.Conv2D(
                 filters=64, kernel_size=3, strides=(2, 2), activation='relu'),
             tf.keras.layers.Flatten(),
@@ -85,6 +86,7 @@ def get_mnist_cnn_shallow(input_shape, latent_dim):
             tf.keras.layers.Conv2DTranspose(
                 filters=64, kernel_size=3, strides=2, padding='same',
                 activation='relu'),
+            tf.keras.layers.Dropout(0.3),
             tf.keras.layers.Conv2DTranspose(
                 filters=32, kernel_size=3, strides=2, padding='same',
                 activation='relu'),

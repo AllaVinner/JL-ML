@@ -11,14 +11,16 @@ import tensorflow as tf
 
 def cont_bern_loss(y_true, y_pred):
     # Calculates Bernoulli reconstruction loss between y_true and y_pred
+
     y_pred = tf.clip_by_value(y_pred, 1e-4, 1 - 1e-4)
     # Normalizing constant
     #log_norm = _cont_bern_log_norm(y_pred)
     log_norm = 0
     log_p_all = -(y_true * tf.math.log(y_pred) + (1 - y_true) * tf.math.log(1 - y_pred) + log_norm)
-    return tf.reduce_mean(log_p_all)
+    reduce_dim = (dim for dim in range(1,tf.rank(y_pred)))
+    return tf.reduce_mean(tf.reduce_sum(log_p_all, axis = reduce_dim))
 
-#  return tf.reduce_mean(tf.reduce_sum(log_p_all, axis=1))
+#  return tf.reduce_mean(tf.reduce_sum(log_p_all, axis = (1:)))
 
 
 def _cont_bern_log_norm(x, l_lim=0.48, u_lim=0.52):

@@ -30,7 +30,7 @@ def kl_normal_divergence(distribution, **kwargs):
 
     """
     z_mean, z_log_var = tf.unstack(distribution, axis = 1)
-    loss = -0.5 * (1 + z_log_var - tf.exp(z_log_var) - tf.square(z_mean))
+    loss = 0.5 * (tf.exp(z_log_var) - z_log_var -1 + tf.square(z_mean))
     loss = tf.reduce_mean(loss)
     return loss
 
