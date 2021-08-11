@@ -1,6 +1,12 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Jul 26 20:50:39 2021
 
+@author: joelw
+"""
 import tensorflow as tf
 from tensorflow import keras
+import numpy as np
 
 class VariationalAutoencoder(keras.Model):
     """
@@ -9,75 +15,74 @@ class VariationalAutoencoder(keras.Model):
     """
     def __init__(self, encoder, decoder, sampler = None, **kwargs):
         """
-        A varaiational autoencode aims at creating a latent representation of
-        a data set. A normal autoencoder works by having a encoder which
-        projects the data down to the latent space and a decoder which aims
-        at projecting the representation back to the original data. The
-        difference between the original data and reconstruction is then summed
-        up in a loss which is backpropagated though the model and tunes the 
-        parameters in the encoder and decoder to eventually end up with a model
-        which approximates the identity function. After the training step we 
-        can then pass the data though just the encoder to obtain the latent
-        representation of our data, and since we now there exist an inverse 
-        (the decoder) no (or very litle) information is lost. The variational 
-        autoencoder works similarly but instead of the encoder uotputting
-        latent points, it outputs latent distirbutions (effectivly giving a
-        vlume to the latent points). This distribution is represented by two
-        vectors: the mean, and the variance, and are assumed to be gauessian.
-        The distribution given by the encoding is passsed to a sampling layer 
-        which samples latent points which is then passed to the decoder.
-        
-        
-        
+        The encoder, decoder, and sampler need to be compatible with eachother.
         
         
         Parameters
         ----------
         encoder : Layer/Model
-            The enocder. Takes an images and encodes it into a latent space. 
-            The output array consists of two vectors stacked. The first vector
-            symbolices the mean of the 
+            The enocder. Takes an images and encodes it into a latent space.
             The encoder should be callable with the argument training.
         decoder : Layer/Model
             Decodes a 
-        sampler : Layer/Model (None)
         
-        Note:
-            The output of the encoder must match the input of the decoder.
-            E.g. if the latent dim is l, then the output of the encdoer should
-            be (2,l), and the input of the decoder should be (l,). 
         """
         super(VariationalAutoencoder, self).__init__(**kwargs)
-        # Set up metrics
-        self.total_loss_tracker = keras.metrics.Mean(name="total_loss")
-        self.reconstruction_loss_tracker = keras.metrics.Mean(
-            name="reconstruction_loss"
-        )
-        self.kl_loss_tracker = keras.metrics.Mean(name="kl_loss")
-        self.normalizing_loss_tracker = keras.metrics.Mean(
-            name="normalizing_loss"
-            )
         
         # Initiate model structure 
-        self.encoder = encoder
-        self.decoder = decoder
-        self.sampler = sampler if sampler is not None\
-                       else NormalSamplingLayer()
+        self.encoder, self.decoder, self.sampler = encoder, decoder, sampler
+        if self.sampler is None: self.sampler = NormalSamplingLayer()
+
+
+
+        #initiate loss tracker
+        self.loss_tracker_total = keras.metrics.Mean(name="total_loss")
+        self.loss_tracker_reconstruction = keras.metrics.Mean(
+            name="reconstruction_loss"
+        )
+        self.loss_tracker_latent = keras.metrics.Mean(name="latent_loss")
+        
+        #if encoder is built, check that it is compatible with the given
+        #decoder
+        if self.encoder.built:
+            self._assert_encoder_decoder_compatibility(self.encoder.input.shape)
+        
         
     def call(self, inputs, training = False, **kwargs):
-        x = inputs
-        x = self.encoder(x, training = training)
-        x = self.sampler(x, training = training)
-        x = self.decoder(x, training = training)
-        return x
+        latent_distribution = self.encoder(inputs)
+        latent_sample       = self.sampler(latent_distribution, training = training)
+        outputs             = self.decoder(latent_sample)
+        return outputs
+
+    def compile(self, reconstruction_loss = None, latent_loss = None,
+                reconstruction_factor = 1e3, latent_factor = 1., **kwargs):
+        super(VariationalAutoencoder, self).compile(**kwargs)
+        
+        if reconstruction_loss is None:
+            self.reconstruction_loss = keras.losses.binary_crossentropy
+        else:
+            self.reconstruction_loss = reconstruction_loss
+        
+        if latent_loss is None:
+            self.latent_loss = kl_normal_divergence
+        else:
+            self.latentloss = latent_loss
+            
+        self.latent_factor = latent_factor
+        self.reconstruction_factor = reconstruction_factor
+    
+    @property
+    def latent_shape(self):
+        return self.decoder.input_shape[1:]
     
     @property
     def latent_dim(self):
-        return self.decoder.input_shape[-1]
+        return np.prod(self.decoder.input_shape[1:])
     
+      
     def encode(self, inputs, **kwargs):
-        latent = self.encoder(inputs, training = False)
-        z_mean = self.sampler(latent, training = False)
+        latent_distribution = self.encoder(inputs, training = False)
+        z_mean = self.sampler(latent_distribution, training = False)
         return z_mean
     
     def get_config(self):
@@ -90,6 +95,14 @@ class VariationalAutoencoder(keras.Model):
         return cls(**config)
     
     
+    def build(self, input_shape):
+        """
+            Check if the given encoder and decoder are compatible
+            before building.
+        """
+        self._assert_encoder_decoder_compatibility(input_shape)
+        super(VariationalAutoencoder, self).build(input_shape)
+        
     def train_step(self, inputs, **kwargs):
         """
         Performs a single step of training on the data given. 
@@ -103,57 +116,82 @@ class VariationalAutoencoder(keras.Model):
             Input data
         
         """
+        if not self.built: self(inputs[0:1])
         with tf.GradientTape() as tape:
             # Forward propagation
-            latent            = self.encoder(inputs, training = True)
-            latent_sample     = self.sampler(latent, training= True)
-            reconstruction    = self.decoder(latent_sample, training= True)
-            # Model overflow oterwise
-            reconstruction    = tf.clip_by_value(reconstruction, 1e-4, 1 - 1e-4)
-            z_mean, z_log_var = tf.unstack(latent, axis = 1)
-            # Calculate losses
-            reconstruction_loss = tf.reduce_mean(
-                    keras.losses.binary_crossentropy(inputs, reconstruction)
-            )
+            latent_distribution  = self.encoder(inputs, training = True)
+            latent_sample        = self.sampler(latent_distribution, training= True)
+            reconstruction       = self.decoder(latent_sample, training= True)
+            # Calculate loss
+            loss_reconstruction = self.reconstruction_factor*self.reconstruction_loss(inputs, reconstruction)
+            loss_latent         = self.latent_factor* self.latent_loss(latent_distribution)
+            loss_total          = loss_reconstruction + loss_latent
             
-            kl_loss = -0.5 * (1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))
-            kl_loss = tf.reduce_mean(tf.reduce_sum(kl_loss, axis=1))
-            #normalizing_loss = -self._cont_bern_log_norm(reconstruction)
-            #normalizing_loss = tf.reduce_mean(tf.reduce_sum(normalizing_loss, axis=1))
-            #total_loss = reconstruction_loss + kl_loss + normalizing_loss
-            total_loss = reconstruction_loss + kl_loss
-            normalizing_loss = -1
-        
         # Calculate and apply gradient
-        grads = tape.gradient(total_loss, self.trainable_weights)
+        grads = tape.gradient(loss_total, self.trainable_weights)
         self.optimizer.apply_gradients(zip(grads, self.trainable_weights))
         
         # Update metrics
-        self.total_loss_tracker.update_state(total_loss)
-        self.reconstruction_loss_tracker.update_state(reconstruction_loss)
-        self.kl_loss_tracker.update_state(kl_loss)
-        self.normalizing_loss_tracker.update_state(normalizing_loss)
-        
+        self.loss_tracker_reconstruction.update_state(loss_reconstruction)
+        self.loss_tracker_latent.update_state(loss_latent)
+        self.loss_tracker_total.update_state(loss_total)
         # Return training message
         return {
-            "loss": self.total_loss_tracker.result(),
-            "reconstruction_loss": self.reconstruction_loss_tracker.result(),
-            "kl_loss": self.kl_loss_tracker.result(),
-            "Normalizing_loss": self.normalizing_loss_tracker.result(),
-        }
-    
+            "Total loss": self.loss_tracker_total.result(),
+            "Reconstruction loss": self.loss_tracker_reconstruction.result(),
+            "Latent loss": self.loss_tracker_latent.result(),
+               }
+  
+    def _assert_encoder_decoder_compatibility(self, input_shape):
+        """
+            Checks if the encoder and decoder are compatible with the given
+            shape of the input. It raises ValueErrors in three occations.
+            1. The encoder is built, and its input shape does not match the 
+            given input shape.
+            2. The sampler is built, and its input_shape does not match the
+            output shape of the encoder.
+            3. The decoder is built, and its input_shape does not match the
+            output shape of the sampler.
+            4. The input of the encoder do not match the output of the decoder.
+
+        Parameters
+        ----------
+        input_shape : TensorShape
+            The shape of the tensor fed to the model. Note, including the 
+            batch dimensios as None.
+
+        Returns
+        -------
+        None.
+
+        """
+        #1. if encoder is built, checks if its input shape is compatible with
+        #the passed input shape.
+        #else the encoder is built.
+        if self.encoder.built:
+            input_shape.assert_is_compatible_with(self.encoder.input.shape)
+        inputs = keras.Input(batch_input_shape = input_shape) 
+        latent_distribution = self.encoder(inputs)
         
-    def _cont_bern_log_norm(self,lam, l_lim=0.49, u_lim=0.51):
-        # computes the log normalizing constant of a continuous Bernoulli distribution in a numerically stable way.
-        # returns the log normalizing constant for lam in (0, l_lim) U (u_lim, 1) and a Taylor approximation in
-        # [l_lim, u_lim].
-        # cut_y below might appear useless, but it is important to not evaluate log_norm near 0.5 as tf.where evaluates
-        # both options, regardless of the value of the condition.
-        cut_lam = tf.where(tf.logical_or(tf.less(lam, l_lim), tf.greater(lam, u_lim)), lam, l_lim * tf.ones_like(lam))
-        log_norm = tf.math.log(tf.abs(2.0 * tf.math.atanh(1 - 2.0 * cut_lam))) - tf.math.log(tf.abs(1 - 2.0 * cut_lam))
-        taylor = tf.math.log(2.0) + 4.0 / 3.0 * tf.pow(lam - 0.5, 2) + 104.0 / 45.0 * tf.pow(lam - 0.5, 4)
-        return tf.where(tf.logical_or(tf.less(lam, l_lim), tf.greater(lam, u_lim)), log_norm, taylor)
+        #2. if sampler is built, checks if its input shape is compatible with
+        #the output shape of the encoder.
+        #else the sampler is built.
+        if self.sampler.built:
+            self.encoder.output.shape.assert_is_compatible_with(self.sampler.input.shape)
+        latent_sample = self.sampler(latent_distribution)
+            
+        #3. if decoder is built, checks if its input shape is compatible with
+        #the output of the encoder.
+        #else the decoder is built.
+        if self.decoder.built:
+            self.sampler.output.shape.assert_is_compatible_with(self.decoder.input.shape)
+        outputs = self.decoder(latent_sample)
         
+        #4. checks if the input of the encoder is compatible with the output of
+        #the decoder.
+        self.encoder.input.shape.assert_is_compatible_with(self.decoder.output.shape)
+         
+
 class NormalSamplingLayer(tf.keras.layers.Layer):
     """
         This class inherits frow keras klass Layer. It takes in a vector of
@@ -163,13 +201,6 @@ class NormalSamplingLayer(tf.keras.layers.Layer):
         fed forward.
     """
     
-    def __init__(self, **kwargs):
-        super(NormalSamplingLayer, self).__init__(**kwargs)
-        
-    def build(self, input_shape):
-        pass
-        
-
     def call(self, inputs, training = False, **kwargs):
         """
             Defines the arcitechture with the input and sends the signal
@@ -201,76 +232,33 @@ class NormalSamplingLayer(tf.keras.layers.Layer):
         return cls(**config)
 
 
-    
-if __name__ == '__main__':
-    import numpy as np
-    import numpy.random as rnd
-    import matplotlib.pyplot as plt
-    import tensorflow as tf
-    from tensorflow import keras
-    from variational_autoencoder import VariationalAutoencoder
-    
-    # For dimension reduction
-    from sklearn.manifold import TSNE
-    from sklearn.decomposition import PCA
-    
-    # for visualization and evaluation
-    from latent_plane_mosaic import LatentPlaneMosaic
-    from latent_interpolation_mosaic import LatentInterpolationMosaic
-    from sample_scatter_gui import SampleScatterGUI
-    
-    
-    latent_dim = 10
-    (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
-    mnist_digits = np.concatenate([x_train, x_test], axis=0)
-    mnist_digits = np.expand_dims(mnist_digits, -1).astype("float32") / 255
-    mnist_labels = np.concatenate([y_train, y_test], axis=0)
-    input_shape = mnist_digits.shape[1:]
-    input_shape
-    
-    
-    # Variational autoencoder
-    encoder = keras.Sequential([
-        keras.Input(input_shape),
-        keras.layers.Conv2D(4, (3,3), padding = "same", activation = "relu"),
-        keras.layers.Conv2D(4, (3,3), padding = "same", activation = "relu"),
-        keras.layers.MaxPool2D((2,2)),
-        keras.layers.Conv2D(8, (3,3), padding = "same", activation = "relu"),
-        keras.layers.Conv2D(8, (3,3), padding = "same", activation = "relu"),
-        keras.layers.MaxPool2D((2,2)),
-        keras.layers.Conv2D(16, (3,3), padding = "same", activation = "relu"),
-        keras.layers.Flatten(),
-        keras.layers.Dense(2*latent_dim),
-        keras.layers.Reshape((2,latent_dim)),
-    ], name = "Encoder" )
-    
-    decoder = keras.Sequential([
-                keras.Input((latent_dim,)),
-                keras.layers.Dense(16*7*7, activation = "relu"),
-                keras.layers.Reshape((7,7,16)),
-                keras.layers.Conv2DTranspose(16, (3,3), activation = "relu", padding = "same"),
-                keras.layers.Conv2DTranspose(16, (3,3), activation = "relu", padding = "same"),
-                keras.layers.UpSampling2D((2,2)),
-                keras.layers.Conv2DTranspose(8, (3,3), activation = "relu", padding = "same"),
-                keras.layers.Conv2DTranspose(8, (3,3), activation = "relu", padding = "same"),
-                keras.layers.UpSampling2D((2,2)),
-                keras.layers.Conv2DTranspose(8, (3,3), activation = "relu", padding = "same"),
-                keras.layers.Conv2DTranspose(1, (3,3), activation = "sigmoid", padding = "same"),
-    ], name = "Decoder")
-    va = VariationalAutoencoder(encoder, decoder)
-    va.compile(optimizer = "adam")
-    
-    
-    
-    #va.train_step(mnist_digits[0:10])
-    
-    va.fit(mnist_digits,
-          epochs = 15,
-          batch_size = 256)
-    
-    
-    va.save("model_binary_crossentropy_beta_1")
-    
+def kl_normal_divergence(distribution, **kwargs):
+    """
     
 
+    Parameters
+    ----------
+    distribution : Tensor, shape = (None, 2, None)
+        Tensor which defines a multi-dimensional normal distribution.
+        The first dimension is the batch size and he last is the space
+        dimension. Each element in the batch is hence a (2,dim) tensor. The
+        first vector represents the mean point of the distribution and the 
+        second represents the log-variance in that dimension.
+        
+    **kwargs : TYPE
+        Will be ignored.
+
+    Returns
+    -------
+    loss : Tensor shape (None, None)
+        The .
+
+    """
+    z_mean, z_log_var = tf.unstack(distribution, axis = 1)
+    loss = -0.5 * (1 + z_log_var - tf.exp(z_log_var) - tf.square(z_mean))
+    loss = tf.reduce_mean(loss)
+    return loss
+
+    
+    
     
