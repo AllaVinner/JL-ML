@@ -59,11 +59,12 @@ class LatentInterpolationMosaic():
         if images.ndim == 3: 
             images = np.expand_dims(images, axis = -1)
             
-        if tf.is_tensor(images):
-            self.images = images.numpy()
-        else:
-            self.images = images
-        
+        # if tf.is_tensor(images):
+        #     self.images = images.numpy()
+        # else:
+        #     self.images = images
+            
+        self.images = np.array(images)
         
         self.mosaic = self.set_mosaic(indeces, num_row, num_col)
         
