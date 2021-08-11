@@ -57,7 +57,7 @@ def cb_vae_loss(y_true, y_pred, mean, logvar, z_latent, precision=1e-4):
     # log_p_all = y_true_flat * tf.math.log(y_pred_flat) + (1 - y_true_flat) * tf.math.log(1 - y_pred_flat) + log_norm_const
     # log_px_z = tf.reduce_mean(tf.reduce_sum(log_p_all, axis=1))
     
-    log_px_z = _reconstruction_loss(y_true_flat, y_pred_flat)
+    log_px_z = reconstruction_loss(y_true_flat, y_pred_flat)
     
     # KL divergence
     log_pz = _log_normal_pdf(z_latent, 0., 0.)
@@ -110,10 +110,10 @@ def cb_autoencoder_loss(y_true, y_pred, precision=1e-4):
     # Clip outputs to avoid numerical instability
     y_pred_flat = tf.clip_by_value(y_pred_flat, precision, 1-precision)
     
-    return -_reconstruction_loss(y_true_flat, y_pred_flat)
+    return -reconstruction_loss(y_true_flat, y_pred_flat)
 
 
-def _reconstruction_loss(y_true, y_pred):
+def reconstruction_loss(y_true, y_pred):
     # Calculates Bernoulli reconstruction loss between y_true and y_pred
     
     # Normalizing constant
