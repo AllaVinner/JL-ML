@@ -19,7 +19,7 @@ def cont_bern_loss(y_true, y_pred):
     log_p_all = -(y_true * tf.math.log(y_pred) + (1 - y_true) * tf.math.log(1 - y_pred) + log_norm)
     
     # Sum over all axis except batch
-    axes_to_reduce = [dim for dim in range(1, tf.rank(log_p_all))]
+    axes_to_reduce = (dim for dim in range(1, tf.rank(log_p_all).numpy()))
     log_p_all_reduced = tf.reduce_sum(log_p_all, axis=axes_to_reduce)
     
     return tf.reduce_mean(log_p_all_reduced)
