@@ -81,8 +81,8 @@ def get_mnist_cnn_shallow(input_shape, latent_dim):
                 filters=64, kernel_size=3, strides=(2, 2), activation='relu'),
             tf.keras.layers.Flatten(),
             # No activation
-            tf.keras.layers.Dense(2*latent_dim),
-            tf.keras.layers.Reshape((2*latent_dim,)),
+            tf.keras.layers.Dense(latent_dim),
+            tf.keras.layers.Reshape((latent_dim,)),
         ]
     )
 

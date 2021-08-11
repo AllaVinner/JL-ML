@@ -4,17 +4,11 @@ Created on Mon Jul 26 20:50:39 2021
 
 @author: joelw
 """
-import tensorflow as tf
-from tensorflow import keras
-import autoencoder_models as ae_models
-import keras
 import numpy as np
+from tensorflow import keras
 
 class Autoencoder(keras.Model):
-    """
-        This class 
-    
-    """
+
     def __init__(self, encoder, decoder, **kwargs):
         """
         The encoder, decoder, and sampler need to be compatible with eachother.
@@ -30,15 +24,14 @@ class Autoencoder(keras.Model):
         
         """
         super(Autoencoder, self).__init__(**kwargs)
+        
         # Initiate model structure 
         self.encoder, self.decoder = encoder, decoder
         
         #if encoder is built, check that it is compatible with the given
         #decoder
         if self.encoder.built:
-            self._assert_encoder_decoder_compatibility(self.encoder.input.shape)
-        
-        
+            self._assert_encoder_decoder_compatibility(self.encoder.input.shape)        
         
     def call(self, inputs, **kwargs):
         encoded = self.encoder(inputs)
@@ -46,8 +39,12 @@ class Autoencoder(keras.Model):
         return outputs
     
     @property
+    def latent_shape(self):
+        return self.decoder.input_shape[1:]
+    
+    @property
     def latent_dim(self):
-        return self.decoder.input_shape[-1]
+        return np.prod(self.decoder.input_shape[1:])
     
     def encode(self, inputs, **kwargs):
         return self.encoder(inputs)
@@ -63,10 +60,8 @@ class Autoencoder(keras.Model):
     
     
     def build(self, input_shape):
-        """
-            Check if the given encoder and decoder are compatible
-            before building.
-        """
+        # Check if the given encoder and decoder are compatible
+        # before building.
         self._assert_encoder_decoder_compatibility(input_shape)
         super(Autoencoder, self).build(input_shape)
         
@@ -111,15 +106,8 @@ class Autoencoder(keras.Model):
         #the decoder.
         self.encoder.input.shape.assert_is_compatible_with(self.decoder.output.shape)
          
-
-
-
-if __name__ == '__main__':
-    input_shape = (28,28,1)
-    latent_dim = 23
-    inputs = keras.Input( input_shape)
-    model =  ae_models.get_mnsit_cnn_shallow(input_shape, latent_dim)
-    #model(inputs)
+    
+    
     
     
     
