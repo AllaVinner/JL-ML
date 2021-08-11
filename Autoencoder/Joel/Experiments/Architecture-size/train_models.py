@@ -19,8 +19,7 @@ from cont_bern_loss import cont_bern_loss
 #Preprocess mnist data
 (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
 #num_samples = 100
-mnist_digits = np.concatenate([x_train, x_test], axis=0)
-mnist_digits = np.expand_dims(mnist_digits, -1).astype("float32") / 255
+mnist_digits = np.expand_dims(x_train, -1).astype("float32") / 255
 mnist_labels = np.concatenate([y_train, y_test], axis=0)
 input_shape = mnist_digits.shape[1:]
 #mnist_digits = mnist_digits[0:num_samples]
