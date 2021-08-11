@@ -99,7 +99,7 @@ def get_mnist_cnn_shallow(input_shape, latent_dim):
                 activation='relu'),
             # No activation
             tf.keras.layers.Conv2DTranspose(
-                filters=1, kernel_size=3, strides=1, padding='same'),
+                filters=1, kernel_size=3, strides=1, padding='same', activation='sigmoid'),
             tf.keras.layers.Reshape(input_shape)
         ]
     )
@@ -112,7 +112,7 @@ def get_mnist_cnn_shallow(input_shape, latent_dim):
 
 def get_dense_shallow(input_shape, latent_dim, intermediat_dim = 200):
     encoder = keras.Sequential([
-        keras.Input(input_shape),
+        keras.layers.InputLayer(input_shape=input_shape),
         keras.layers.Flatten(),
         keras.layers.Dense(intermediat_dim, activation="relu"),
         keras.layers.Dense(latent_dim),
@@ -120,7 +120,7 @@ def get_dense_shallow(input_shape, latent_dim, intermediat_dim = 200):
         ], name = "Encoder")
     
     decoder = keras.Sequential([
-        keras.Input((latent_dim,)),
+        keras.layers.InputLayer(input_shape=(latent_dim,)),
         keras.layers.Dense(intermediat_dim, activation = "relu"),
         keras.layers.Dense(np.prod(input_shape), activation = "sigmoid"),
         keras.layers.Reshape(input_shape),
@@ -133,7 +133,7 @@ def get_dense_shallow(input_shape, latent_dim, intermediat_dim = 200):
 
 def get_dense_deep(input_shape, latent_dim, intermediat_dim = (200,100,50)):
     encoder = keras.Sequential([
-        keras.Input(input_shape),
+        keras.layers.InputLayer(input_shape=input_shape),
         keras.layers.Flatten(),
         keras.layers.Dense(intermediat_dim[0], activation="relu"),
         keras.layers.Dense(intermediat_dim[2], activation="relu"),
@@ -143,7 +143,7 @@ def get_dense_deep(input_shape, latent_dim, intermediat_dim = (200,100,50)):
         ], name = "Encoder")
     
     decoder = keras.Sequential([
-        keras.Input((latent_dim,)),
+        keras.layers.InputLayer(input_shape=(latent_dim,)),
         keras.layers.Dense(intermediat_dim[2], activation = "relu"),
         keras.layers.Dense(intermediat_dim[1], activation = "relu"),
         keras.layers.Dense(intermediat_dim[0], activation = "relu"),
