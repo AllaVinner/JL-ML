@@ -53,25 +53,18 @@ class LatentInterpolationMosaic():
                 Number of images stiched together in each col of the mosaic.
         """
         # Initiate the user input
-        self.encoder = encoder
-        self.decoder = decoder
+        self.encoder = lambda x: np.array(encoder(x))
+        self.decoder = lambda x: np.array(decoder(x))
         # Adds a channel to the images if they don't already have one.
+        self.images = np.array(images)
         if images.ndim == 3: 
             images = np.expand_dims(images, axis = -1)
-            
-        # if tf.is_tensor(images):
-        #     self.images = images.numpy()
-        # else:
-        #     self.images = images
-            
-        self.images = np.array(images)
         
         self.mosaic = self.set_mosaic(indeces, num_row, num_col)
         
     
     def set_mosaic(self, indeces, num_row, num_col):
         # Get point vectors in latent space
-        
         latent_origin  = self.encoder(self.images[indeces[0:1],:])
         latent_vectors = self.encoder(self.images[indeces[1:3],:])-latent_origin      
         # Convert to numpy

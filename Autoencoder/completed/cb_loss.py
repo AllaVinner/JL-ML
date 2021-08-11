@@ -4,10 +4,6 @@ from tensorflow.python.ops import math_ops
 import numpy as np
 
 def cb_vae_loss(y_true, y_pred, mean, logvar, z_latent, precision=1e-4):
-    # Potential problem: we currently assume we have an extra dimension
-    # on the input, ie shape=[batch_size, d0, .., dN, 1].
-    # Remove it?
-    
     """
     Returns the Continuous Bernoulli ELBO, https://arxiv.org/abs/1907.06845
     For example used on MNIST with Variational Autoencoders.
