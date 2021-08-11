@@ -47,7 +47,7 @@ def get_mnist_cnn_deep(input_shape, latent_dim):
     ], name = "Encoder" )
     
     decoder = keras.Sequential([
-        keras.Input((latent_dim,)),
+        keras.layers.InputLayer(input_shape = (latent_dim,)),
         keras.layers.Dense(200, activation = "relu"),
         keras.layers.Dense(3*3*64, activation = "relu"),
         keras.layers.Reshape((3,3,64)),
