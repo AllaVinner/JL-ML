@@ -20,6 +20,7 @@ def get_mnist_cnn_deep(input_shape, latent_dim):
     # Variational autoencoder
     encoder = keras.Sequential([
         keras.Input(input_shape),
+        keras.layers.Reshape((28,28,1)),
         keras.layers.Conv2D(8, (3,3), padding = "same", activation = "relu"),
         keras.layers.Conv2D(8, (3,3), padding = "same", activation = "relu"),
         keras.layers.MaxPool2D((2,2)),
@@ -65,7 +66,8 @@ def get_mnist_cnn_shallow(input_shape, latent_dim):
     # Variational autoencoder
     encoder = tf.keras.Sequential(
         [
-            tf.keras.layers.InputLayer(input_shape=(28, 28, 1)),
+            tf.keras.layers.InputLayer(input_shape= input_shape),
+            tf.keras.layers.Reshape((28,28,1)),
             tf.keras.layers.Conv2D(
                 filters=32, kernel_size=3, strides=(2, 2), activation='relu'),
             tf.keras.layers.Conv2D(
@@ -90,7 +92,8 @@ def get_mnist_cnn_shallow(input_shape, latent_dim):
                 activation='relu'),
             # No activation
             tf.keras.layers.Conv2DTranspose(
-                filters=1, kernel_size=3, strides=1, padding='same'),
+                filters=1, kernel_size=3, strides=1, padding='same',
+                activation = "sigmoid"),
         ]
     )
     
