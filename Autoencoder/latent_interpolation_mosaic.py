@@ -53,12 +53,13 @@ class LatentInterpolationMosaic():
                 Number of images stiched together in each col of the mosaic.
         """
         # Initiate the user input
-        self.encoder = encoder
-        self.decoder = decoder
+        self.encoder = lambda x: np.array(encoder(x))
+        self.decoder = lambda x: np.array(decoder(x))
         # Adds a channel to the images if they don't already have one.
+        self.images = np.array(images)
         if images.ndim == 3: 
             images = np.expand_dims(images, axis = -1)
-        self.images = images
+        
         self.mosaic = self.set_mosaic(indeces, num_row, num_col)
         
     
