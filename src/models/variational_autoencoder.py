@@ -2,8 +2,8 @@ import tensorflow as tf
 from tensorflow import keras
 import numpy as np
 
-from normal_sampling_layer import NormalSamplingLayer
-from kl_normal_divergence import kl_normal_divergence
+from models.normal_sampling_layer import NormalSamplingLayer
+from models.kl_normal_divergence import kl_normal_divergence
 
 class VariationalAutoencoder(keras.Model):
     """

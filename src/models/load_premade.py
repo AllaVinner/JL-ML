@@ -2,8 +2,9 @@ import tensorflow as tf
 from tensorflow import keras
 import numpy as np
 from collections import defaultdict
-from autoencoder import Autoencoder
-from variational_autoencoder import VariationalAutoencoder
+
+from models.autoencoder import Autoencoder
+from models.variational_autoencoder import VariationalAutoencoder
 
 
 def load_premade_model(model_type = None, model_name = None, **kwargs):

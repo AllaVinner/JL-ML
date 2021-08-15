@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-def cont_bern_loss(y_true, y_pred):
+def continuous_bernoulli_loss(y_true, y_pred):
     # Calculates Bernoulli reconstruction loss between y_true and y_pred
     # The normalization constant diverges towards 0 and 1, and hence the 
     # tensor is cliped.
