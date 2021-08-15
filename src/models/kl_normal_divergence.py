@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Aug  6 15:34:33 2021
-
-@author: joelw
-"""
-
 import tensorflow as tf
 
 def kl_normal_divergence(distribution, **kwargs):
