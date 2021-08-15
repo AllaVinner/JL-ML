@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jul 26 20:50:39 2021
-
-@author: joelw
-"""
 import tensorflow as tf
 from tensorflow import keras
 import numpy as np

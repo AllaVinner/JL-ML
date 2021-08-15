@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Aug  6 15:33:08 2021
-
-@author: joelw
-"""
 import tensorflow as tf
 
 class NormalSamplingLayer(tf.keras.layers.Layer):

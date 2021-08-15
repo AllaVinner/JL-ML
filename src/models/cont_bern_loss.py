@@ -1,13 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Aug  6 15:41:24 2021
-
-@author: joelw
-"""
-
 import tensorflow as tf
-
-
 
 def cont_bern_loss(y_true, y_pred):
     # Calculates Bernoulli reconstruction loss between y_true and y_pred
