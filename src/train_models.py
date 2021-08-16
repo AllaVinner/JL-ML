@@ -1,12 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Aug  6 17:44:59 2021
-
-@author: joelw
-"""
-
-
-
 import tensorflow as tf
 from tensorflow import keras
 import numpy as np
@@ -25,7 +16,7 @@ train_digits = np.expand_dims(x_train, -1).astype("float32") / 255
 
 
 #Set variables
-latent_dim = 10
+latent_dim = 2
 input_shape = train_digits.shape[1:]
 
 # Train models
