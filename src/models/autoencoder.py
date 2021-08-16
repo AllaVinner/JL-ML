@@ -32,6 +32,12 @@ class Autoencoder(keras.Model):
         outputs = self.decoder(encoded)
         return outputs
     
+    def compile(self, loss=None, **kwargs):
+        if loss is None:
+            loss = keras.losses.binary_crossentropy
+        
+        super(Autoencoder, self).compile(loss=loss, **kwargs)
+    
     @property
     def latent_shape(self):
         return self.decoder.input_shape[1:]
@@ -52,14 +58,11 @@ class Autoencoder(keras.Model):
     def from_config(cls, config):
         return cls(**config)
     
-    
     def build(self, input_shape):
         # Check if the given encoder and decoder are compatible
         # before building.
         self._assert_encoder_decoder_compatibility(input_shape)
         super(Autoencoder, self).build(input_shape)
-        
- 
   
     def _assert_encoder_decoder_compatibility(self, input_shape):
         """
