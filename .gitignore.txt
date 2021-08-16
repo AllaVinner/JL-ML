@@ -1,5 +1,5 @@
 **/__pycache__/
 **.ipynb_checkpoints
 .vscode/*
-src/test_notebook.ipynb
+/src/test_notebook.ipynb
 *.pyc
