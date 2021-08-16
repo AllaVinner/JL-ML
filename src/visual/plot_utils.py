@@ -15,7 +15,7 @@ def plot_mnist_comparison(images, figsize=None, row_labels=None):
   
   """
 
-  nbr_rows = images[0].shape[0]
+  nbr_rows = len(images)
 
   fig = plt.figure(figsize=figsize)
   fig.subplots_adjust(hspace=0, wspace=0)
