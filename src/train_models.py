@@ -16,7 +16,7 @@ train_digits = np.expand_dims(x_train, -1).astype("float32") / 255
 
 
 #Set variables
-latent_dim = 10
+latent_dim = 2
 input_shape = train_digits.shape[1:]
 
 # Train models
