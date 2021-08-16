@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 import numpy as np
+import warnings
 
 from models.normal_sampling_layer import NormalSamplingLayer
 from models.kl_normal_divergence import kl_normal_divergence
@@ -52,8 +53,11 @@ class VariationalAutoencoder(keras.Model):
         return outputs
 
     def compile(self, reconstruction_loss = None, latent_loss = None,
-                reconstruction_factor = 1e3, latent_factor = 1., **kwargs):
+                reconstruction_factor = 1e3, latent_factor = 1., loss = None, **kwargs):
         super(VariationalAutoencoder, self).compile(**kwargs)
+        
+        if loss is not None:
+            warnings.warn("The 'loss' parameter has been used, which is not supported and will have no effect on training. Use 'reconstruction_loss' instead")
         
         if reconstruction_loss is None:
             self.reconstruction_loss = keras.losses.binary_crossentropy
