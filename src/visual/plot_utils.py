@@ -15,10 +15,6 @@ def plot_mnist_comparison(images, figsize=None, row_labels=None):
   
   """
 
-<<<<<<< HEAD
-  nbr_rows = images[0].shape[0]
-=======
->>>>>>> f4f24ddb4b4787a4614f96b9355019ebf6276905
   nbr_rows = len(images)
 
   fig = plt.figure(figsize=figsize)
@@ -37,4 +33,19 @@ def plot_mnist_comparison(images, figsize=None, row_labels=None):
 
     ax.set_yticks([])
   
+  plt.show()
+  
+
+def plot_2d_scatter(points, labels, figsize=(10, 10)):
+  # points.shape: (nbr_points, 2)
+  # labels.shape: (nbr_points,)
+  fig, ax = plt.subplots(figsize=figsize)
+
+  scatter = ax.scatter(points[:,0], points[:,1], c = labels.astype('float32'), cmap='tab10')
+
+  legend1 = ax.legend(*scatter.legend_elements(),
+                    loc="upper left", title="Classes")
+  
+  ax.add_artist(legend1)
+
   plt.show()
