@@ -1,4 +1,5 @@
-__pycache__/
+**/__pycache__/
+**.ipynb_checkpoints
 .vscode/*
-src/models/__pycache__/
-src/.ipynb_checkpoints/
+/src/test_notebook.ipynb
+*.pyc

@@ -15,7 +15,10 @@ def plot_mnist_comparison(images, figsize=None, row_labels=None):
   
   """
 
+<<<<<<< HEAD
   nbr_rows = images[0].shape[0]
+=======
+>>>>>>> f4f24ddb4b4787a4614f96b9355019ebf6276905
   nbr_rows = len(images)
 
   fig = plt.figure(figsize=figsize)
