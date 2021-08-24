@@ -14,6 +14,8 @@ They look okay. Since its latent dimension is two dimensional, we can take a loo
 
 image: scatter plot of encoded images from test set
 
+![alt-text](https://github.com/AllaVinner/JL-ML/blob/main/images/latent_scatter_plot_autoencoder.png)
+
 ![alt-text](https://github.com/AllaVinner/JL-ML/blob/main/images/scatter_gui_gif.gif)
 
 insert some cool insight (7)
@@ -49,9 +51,6 @@ image: reconstructions without and with cont bern
 ![alt-text](https://github.com/AllaVinner/JL-ML/blob/main/images/cont_bern_comparison.png)
 
 image: generative without and with cont bern
-
-
-
 
 
 do u want to make ur own autoencoder? here is an example:
