@@ -12,6 +12,8 @@ They look okay. Since its latent dimension is two dimensional, we can take a loo
 
 image: scatter plot of encoded images from test set
 
+![alt-text](https://github.com/AllaVinner/JL-ML/blob/main/images/scatter_gui_gif.gif)
+
 insert some cool insight (7)
 
 One idea is to also use them to generate new images, by choosing points in the latent space. How does that look?
