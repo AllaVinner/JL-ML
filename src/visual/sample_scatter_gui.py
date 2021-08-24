@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 class SampleScatterGUI():
     
@@ -32,33 +32,45 @@ class SampleScatterGUI():
         self.labels = labels
         self.images = images
 
-        self.fig = plt.figure()
-        self.axs = self.fig.subplots(1,2)
+        self.fig, self.ax = plt.subplots()
             
         self.unique = np.unique(self.labels)
         self.num_labels = self.unique.size
         self.fig.canvas.mpl_connect('button_press_event', self.button_press_callback)
-
 
         self.current_index = 0
         self.draw()
         
     def draw(self):
         # Clear axeses
-        self.axs[0].cla()   
-        self.axs[1].cla()
+        self.ax.cla()
+        
+        # axis for embedded image plot
+        image_axs = inset_axes(self.ax, width='30%', height=2., loc=2)
         
         # Draw scatter
         for i in range(self.num_labels):
             x = self.latent_projection[self.labels == self.unique[i],0]
             y = self.latent_projection[self.labels == self.unique[i],1]
-            self.axs[0].scatter(x,y,label = self.unique[i])
+            self.ax.scatter(x,y,label = self.unique[i])
         
         # Draw current index
-        self.axs[0].scatter(self.latent_projection[self.current_index,0], self.latent_projection[self.current_index,1],
-                       label = "Current label")
-        self.axs[1].imshow(self.images[self.current_index])
-        self.axs[0].legend()
+        self.ax.scatter(self.latent_projection[self.current_index,0], self.latent_projection[self.current_index,1],
+                       label = "Current")
+        
+        image_axs.imshow(self.images[self.current_index])
+        image_axs.get_xaxis().set_visible(False)
+        image_axs.get_yaxis().set_visible(False)
+        
+        self.ax.get_xaxis().set_visible(False)
+        self.ax.get_yaxis().set_visible(False)
+        
+        box = self.ax.get_position()
+        self.ax.set_position([box.x0, box.y0, 0.7, box.height])
+        
+        self.ax.legend(loc='center left', title='Classes', bbox_to_anchor=(1, 0.5),
+                    fontsize=15, title_fontsize=14, labelspacing=1, markerscale=1.5)
+        
         self.fig.canvas.draw_idle()
         
     def button_press_callback(self, event):
