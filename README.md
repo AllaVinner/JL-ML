@@ -8,6 +8,8 @@ Here below we see an autoencoder trained to reconstruct images from MNIST.
 
 image: regular autoencoder reconstructions on test set
 
+![alt-text](https://github.com/AllaVinner/JL-ML/blob/main/images/autoencoder_10epochs_32bs_shallow_recon.png)
+
 They look okay. Since its latent dimension is two dimensional, we can take a look at the encodings of all the images in the test set.
 
 image: scatter plot of encoded images from test set
@@ -43,6 +45,9 @@ why is bernoulli the right way? explanation (wrong to assume pixels discrete)
 this results in
 
 image: reconstructions without and with cont bern
+
+![alt-text](https://github.com/AllaVinner/JL-ML/blob/main/images/cont bern comparison.png)
+
 image: generative without and with cont bern
 
 
