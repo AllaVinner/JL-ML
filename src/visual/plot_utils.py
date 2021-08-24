@@ -43,8 +43,13 @@ def plot_2d_scatter(points, labels, figsize=(10, 10)):
 
   scatter = ax.scatter(points[:,0], points[:,1], c = labels.astype('float32'), cmap='tab10')
 
+  # Shrink plot and put legend on right side
+  box = ax.get_position()
+  ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+
   legend1 = ax.legend(*scatter.legend_elements(),
-                    loc="upper left", title="Classes")
+                    loc="center left", title="Classes", bbox_to_anchor=(1, 0.5),
+                    fontsize=20, title_fontsize=15, labelspacing=1, markerscale=2.)
   
   ax.add_artist(legend1)
 
