@@ -46,7 +46,7 @@ this results in
 
 image: reconstructions without and with cont bern
 
-![alt-text](https://github.com/AllaVinner/JL-ML/blob/main/images/cont bern comparison.png)
+![alt-text](https://github.com/AllaVinner/JL-ML/blob/main/images/cont_bern_comparison.png)
 
 image: generative without and with cont bern
 
