@@ -29,7 +29,7 @@ def plot_mnist_comparison(images, figsize=None, row_labels=None):
 
     ax.get_xaxis().set_visible(False)
 
-    if row_labels is not None: ax.set_ylabel(row_labels[row])
+    if row_labels is not None: ax.set_ylabel(row_labels[row], fontsize=25, rotation=0, labelpad=100)
 
     ax.set_yticks([])
   
