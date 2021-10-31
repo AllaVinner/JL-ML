@@ -3,3 +3,5 @@
 .vscode/*
 /src/test_notebook.ipynb
 *.pyc
+src/jlauto.egg-info/*
+*.txt
