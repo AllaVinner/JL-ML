@@ -1,0 +1,3 @@
+model_name,dim_index,code_spread,mean_radius
+vae_rf_100,0,1.0258957,0.13318624
+vae_rf_100,1,0.97548145,0.13653803

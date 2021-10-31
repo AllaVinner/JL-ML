@@ -1,5 +1,9 @@
 // tells pylance to look in this folder when importing stuff
 
 {
-    "python.analysis.extraPaths": ["./Autoencoder", "./Autoencoder/completed"]
+    "python.analysis.extraPaths": [
+        "./Autoencoder",
+        "./Autoencoder/completed"
+    ],
+    "jupyter.jupyterServerType": "local"
 }
