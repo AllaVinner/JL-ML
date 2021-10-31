@@ -3,8 +3,8 @@ from tensorflow import keras
 import numpy as np
 import warnings
 
-from models.normal_sampling_layer import NormalSamplingLayer
-from models.kl_normal_divergence import kl_normal_divergence
+from jlauto.models.normal_sampling_layer import NormalSamplingLayer
+from jlauto.models.kl_normal_divergence import kl_normal_divergence
 
 class VariationalAutoencoder(keras.Model):
     """

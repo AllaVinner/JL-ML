@@ -3,8 +3,8 @@ from tensorflow import keras
 import numpy as np
 from collections import defaultdict
 
-from models.autoencoder import Autoencoder
-from models.variational_autoencoder import VariationalAutoencoder
+from jlauto.models.autoencoder import Autoencoder
+from jlauto.models.variational_autoencoder import VariationalAutoencoder
 
 
 def load_premade_model(model_type = None, model_name = None, **kwargs):
