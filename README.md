@@ -4,7 +4,15 @@ This repository contains a number of pre made [autoencoder](https://en.wikipedia
 
 ## 
 
-The basic principle behind an autoencoder is compression. In the case of images we first feed the model an image, which it then is forced to represent more sparsely by design. We call this the encoding step. The space in which this sparse encoding exists is called the _latent space_, since it is "hidden" inside the model. The model then tries to recreate the image using the latent representation, resulting in a similar but often blurrier image, since it has been subject to lossy compression. We call this the decoding step. The result is then compared to the original in order to improve the model. You can think of this architecture as a sort of bottleneck through which the image is sqeezed through.
+The basic principle behind an autoencoder is compression. In the case of images we first feed the model an image, which it then is forced to represent more sparsely by design. You can think of this as a sort of bottleneck through which the image is sqeezed through. The figure below shows a rough sketch of an autoencoder, where the yellow part represents the bottleneck.
+
+<p align="center">
+  <img src="https://github.com/AllaVinner/JL-ML/blob/main/images/autoencoder_arch.png" alt="drawing" width="600"/>
+</p>
+
+([Image source](https://medium.com/dataseries/convolutional-autoencoder-in-pytorch-on-mnist-dataset-d65145c132ac 'Source'))
+
+We call this the encoding step. The space in which this sparse encoding exists is called the _latent space_, since it is "hidden" inside the model. The model then tries to recreate the image using the latent representation, resulting in a similar but often blurrier image, since it has been subject to lossy compression. We call this the decoding step. The result is then compared to the original in order to improve the model.
 
 You can read more in this [blog post](https://www.jeremyjordan.me/autoencoders/) and in [Goodfellow el. al](https://www.deeplearningbook.org/).
 
