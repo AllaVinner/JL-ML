@@ -61,10 +61,14 @@ class VariationalAutoencoder(keras.Model):
         
         if reconstruction_loss is None:
             self.reconstruction_loss = keras.losses.binary_crossentropy
+        elif reconstruction_loss == 'binary_crossentropy':
+            self.reconstruction_loss = keras.losses.binary_crossentropy
         else:
             self.reconstruction_loss = reconstruction_loss
         
         if latent_loss is None:
+            self.latent_loss = kl_normal_divergence
+        elif latent_loss == 'kl_divergence':
             self.latent_loss = kl_normal_divergence
         else:
             self.latentloss = latent_loss

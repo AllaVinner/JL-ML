@@ -1,0 +1,11 @@
+batch_size: 512
+epochs: 1
+latent_dim: 3
+latent_factor: 1
+latent_loss: kl_divergence
+model_name: mnist_cnn_shallow
+model_type: variational_autoencoder
+name: ae_latent_dim_3
+optimizer: adam
+reconstruction_factor: 1
+reconstruction_loss: binary_crossentropy
