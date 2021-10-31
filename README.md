@@ -33,7 +33,7 @@ In the image below the latent encoding of 10 000 characters can be seen, each on
 image: scatter plot of encoded images from test set
 
 <p align="center">
-  <img src="https://github.com/AllaVinner/JL-ML/blob/main/images/latent_scatter_plot_autoencoder.png" alt="drawing" width="600"/>
+  <img src="https://github.com/AllaVinner/JL-ML/blob/main/images/latent_scatter_plot_autoencoder.png" alt="drawing" width="400"/>
 </p>
   
 To get a better feel for the latent space we'll take a look at a couple of other digits in it. In the gif below we're using `sample_scatter_gui` to click around on different digits.
@@ -42,13 +42,19 @@ To get a better feel for the latent space we'll take a look at a couple of other
   <img src="https://github.com/AllaVinner/JL-ML/blob/main/images/scatter_gui_gif.gif" alt="drawing" width="600"/>
 </p>
   
-So what might we use this for? One interesting application is generating new images of digits. If we randomly sample a point in the latent space, we might get a new digit, right?
+So what might we use this for? One interesting application is generating new images of digits. If we randomly sample a point in the latent space, we might get a new digit, right? Let's try that. In the image below are 16 examples of random points in the latent space that have been decoded.
 
-image: reconstructions of randomly sampled points?
+<p align="center">
+  <img src="https://github.com/AllaVinner/JL-ML/blob/main/images/simple_auto_random_sampled.png" alt="drawing" width="600"/>
+</p>
+
+As you can see the results are pretty varied, with some images resembling digits, but others not at all. 
 
 what if we choose points inbetween two encodings of other numbers?
 
-image: linear latent interpolation between two encodings
+TODO image: linear latent interpolation between two encodings
+
+TODO: add motivation for variational autoencoders,
 
 they are quite bad. How can we improve them? To force the autoencoder to create some structure in the latent space, or actually make the areas around the encodings also correspond to real numbers, we introduce a latent loss (explan why)
 
